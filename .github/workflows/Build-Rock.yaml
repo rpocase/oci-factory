@@ -29,6 +29,14 @@ on:
         description: "Directory in repository where to find the rockcraft.yaml file."
         type: string
         required: true
+      lfs:
+        description: "Whether to download Git LFS files."
+        type: boolean
+        default: false
+      lfs-checkout-pattern:
+        description: "Pattern to match LFS files to checkout. If not set, all LFS files are checked out."
+        type: string
+        default: ''
 
       # Parameters for multi-arch builds
       # specifying the runners with size label to prevent from running on private/tiobe runners
@@ -79,7 +87,7 @@ jobs:
           # Here we clone the oci-factory repo using the default ref of the checkout action.
           # It will be set to a ref that triggered this workflow if the workflow is run within the oci-factory repo,
           # or to the default branch of the oci-factory repo if the workflow is called from another repo.
-          repository: canonical/oci-factory
+          repository: rpocase/oci-factory
           fetch-depth: 1
 
       - name: Cloning Target Repo
@@ -90,6 +98,8 @@ jobs:
           ref: ${{ inputs.rock-repo-commit }}
           submodules: "recursive"
           token: ${{ secrets.source-github-token }}
+          lfs: ${{ inputs.lfs }}
+          lfs-checkout-pattern: ${{ inputs.lfs-checkout-pattern }}
 
       - name: Installing Python 
         uses: actions/setup-python@v5
@@ -122,7 +132,7 @@ jobs:
       - name: Cloning OCI Factory
         uses: actions/checkout@v4
         with:
-          repository: canonical/oci-factory
+          repository: rpocase/oci-factory
           fetch-depth: 1
 
       - name: Cloning Target Repo
@@ -133,6 +143,8 @@ jobs:
           ref: ${{ inputs.rock-repo-commit }}
           submodules: "recursive"
           token: ${{ secrets.source-github-token }}
+          lfs: ${{ inputs.lfs }}
+          lfs-checkout-pattern: ${{ inputs.lfs-checkout-pattern }}
 
       - name: Building Target
         id: rockcraft
@@ -183,6 +195,7 @@ jobs:
           ref: ${{ inputs.rock-repo-commit }}
           submodules: "recursive"
           token: ${{ secrets.source-github-token }}
+          
 
       - name: Building Target
         # TODO: Replace this retry action with bash equivalent for better testing
