@@ -19,6 +19,14 @@ inputs:
     description: "Github token for pulling from private repositories"
     default: ''
     required: false
+  lfs:
+    description: 'Whether to download Git LFS files.'
+    default: 'false'
+    required: false
+  lfs-checkout-pattern:
+    description: 'Pattern to match LFS files to checkout. If not set, all LFS files are checked out.'
+    default: ''
+    required: false
 
 runs:
   using: "composite" 
@@ -56,4 +64,15 @@ runs:
         if ${{ inputs.submodules == 'true' || inputs.submodules == 'recursive' }}
         then
           git submodule update ${{ inputs.submodules == 'recursive' && '--recursive' || '' }}
+        fi
+
+        # install git-lfs and checkout lfs files if required
+        if ${{ inputs.lfs == 'true' }}
+        then
+          sudo apt-get update && sudo apt-get install -y git-lfs
+          if ! [[ -z "${{ inputs.lfs-pull-pattern }}" ]]; then
+            git lfs pull --include="${{ inputs.lfs-pull-pattern }}"
+          else
+            git lfs pull
+          fi
         fi
