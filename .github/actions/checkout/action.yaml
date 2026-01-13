@@ -19,9 +19,13 @@ inputs:
     description: "Github token for pulling from private repositories"
     default: ''
     required: false
-  lfs: 
-    description: 'Whether to pull Git LFS files.'
+  lfs:
+    description: 'Whether to download Git LFS files.'
     default: 'false'
+    required: false
+  lfs-pull-pattern:
+    description: 'Pattern to match LFS files to pull in source repository. If not set, all LFS files are pulled out.'
+    default: ''
     required: false
 
 runs:
@@ -66,5 +70,9 @@ runs:
         if ${{ inputs.lfs == 'true' }}
         then
           sudo apt-get update && sudo apt-get install -y git-lfs
-          git lfs pull
+          if ! [[ -z "${{ inputs.lfs-pull-pattern }}" ]]; then
+            git lfs pull --include="${{ inputs.lfs-pull-pattern }}"
+          else
+            git lfs pull
+          fi
         fi
